@@ -14,7 +14,7 @@ $ python3 -m pip install -r requirements.txt
 ## Usage
 
 ```console
-$ python3  --help
+$ python3 freeintruder.py --help
 
 
     ___                       _                                  _               
