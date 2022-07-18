@@ -7,45 +7,48 @@ import string
 def attack_starter(request,attack,payloads,marker):
     pattern = f"(?:{marker})(.*?)(?:{marker})"
     positions = positions_search(request,pattern)
-    print(positions)
+    
     if(attack == "sniper"):
-        for elem in payloads:
-            with open(elem,"r") as file:
-                tasks_request = sniper(request,positions,file,marker)
+        
+            tasks_request = sniper(request,payloads,positions,marker,pattern)
+            
     if(attack == "parallel"):
-        for elem in payloads:
-            with open(elem,"r") as file:
-                tasks_request = parallel(request,positions,file)
+        
+            tasks_request = parallel(request,positions,payloads)
 
 
 
-def sniper(request,positions,file,marker,pattern):
+def sniper(request,payloads,positions,marker,pattern):
     
     total_requests = []
     for key,value in positions.items():            
-        for line in file:
-                
-            new_request = dict(request)
-            new_request = request_modifier(new_request,line,key,pattern,value[0])
-            new_request = marker_cleaner(new_request,marker)
-            
-            
-            total_requests.append(new_request)
+        for elem in payloads:
+            with open(elem,"r") as file:
+                for line in file:
                     
+                    new_request = dict(request)
+                    new_request = request_modifier(new_request,line,key,pattern,value[0])
+                    new_request = marker_cleaner(new_request,marker)
+                    
+                    
+                    total_requests.append(new_request)
+           
     return total_requests         
            
            
-def parallel(request,positions,file,pattern):
+def parallel(request,payloads,positions,pattern):
     
     total_requests = []
-    for line in file:
-        
-        new_request = dict(request)
-        for key,value in positions.items():
-           
-            new_request = request_modifier(new_request,line,key,pattern,value[0])
-                                       
-        total_requests.append(new_request)                    
+    for elem in payloads:
+        with open(elem,"r") as file:
+            for line in file:
+                
+                new_request = dict(request)
+                for key,value in positions.items():
+                
+                    new_request = request_modifier(new_request,line,key,pattern,value[0])
+                                            
+                total_requests.append(new_request)                    
 
     return total_requests
 
@@ -70,7 +73,7 @@ def cluster(files):
     
 def request_modifier(request,payload,key,pattern,level=None):
     # URL-ENCONDED
-    print(request)
+    
     payload = payload.strip()
     if(level is not None):       
         request[level][key] = re.sub(pattern,payload,request[level][key])
