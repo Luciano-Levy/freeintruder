@@ -1,10 +1,98 @@
 from collections import OrderedDict
 import re
+import string
+# inform total requests
 
-from requests import request
+
+def attack_starter(request,attack,payloads,marker):
+    pattern = f"(?:{marker})(.*?)(?:{marker})"
+    positions = positions_search(request,pattern)
+    print(positions)
+    if(attack == "sniper"):
+        for elem in payloads:
+            with open(elem,"r") as file:
+                tasks_request = sniper(request,positions,file,marker)
+    if(attack == "parallel"):
+        for elem in payloads:
+            with open(elem,"r") as file:
+                tasks_request = parallel(request,positions,file)
 
 
-def positions_search(request,marker):
+
+def sniper(request,positions,file,marker,pattern):
+    
+    total_requests = []
+    for key,value in positions.items():            
+        for line in file:
+                
+            new_request = dict(request)
+            new_request = request_modifier(new_request,line,key,pattern,value[0])
+            new_request = marker_cleaner(new_request,marker)
+            
+            
+            total_requests.append(new_request)
+                    
+    return total_requests         
+           
+           
+def parallel(request,positions,file,pattern):
+    
+    total_requests = []
+    for line in file:
+        
+        new_request = dict(request)
+        for key,value in positions.items():
+           
+            new_request = request_modifier(new_request,line,key,pattern,value[0])
+                                       
+        total_requests.append(new_request)                    
+
+    return total_requests
+
+# len(payloads) == len(positions)
+# all individual patloads must have same len                            
+# pass open files
+"""
+def pitchfork(files):
+    
+    for j in range(len(files[0])):
+        for i in range(len(positions)):
+            new_request = dict(request)
+            #files[i] line j in position replace
+        #REQUEST        
+        
+def cluster(files):
+    for j in range(len(files[0])):
+        for i in range(len(positions)):
+            for k in files[i]:
+"""            
+
+    
+def request_modifier(request,payload,key,pattern,level=None):
+    # URL-ENCONDED
+    print(request)
+    payload = payload.strip()
+    if(level is not None):       
+        request[level][key] = re.sub(pattern,payload,request[level][key])
+    else:    
+        request[key] = re.sub(pattern,payload,request[key])
+        
+    return request
+
+def marker_cleaner(request,marker):
+    clean_request = dict(request)
+    for key,value in request.items():
+        if(value is not None):    
+            if(isinstance(value,OrderedDict) and len(value) > 0):
+                clean_request[key] = marker_cleaner(value,marker)
+                continue
+
+            if(isinstance(value,str)):
+                clean_request[key] = value.replace(marker,"") 
+    
+    return clean_request       
+        
+def positions_search(request,pattern,level=None):
     
     positions = OrderedDict()
     
@@ -12,65 +100,13 @@ def positions_search(request,marker):
          
         if(value is not None):    
             if(isinstance(value,OrderedDict) and len(value) > 0):
-                positions[key] = positions_search(value,marker)
+                positions.update(positions_search(value,pattern,key))
                 continue
 
-            pattern = f"(?:{marker})(.*?)(?:{marker})"
+           
             search = re.search(pattern,str(value)) # First apareance or all, multiple parametres in one http field?
             if(search is not None):
                 
-                positions[key] = search.span()
+                positions[key] = (level,search.span())
                
     return positions
-
-def sniper(request,positions,payloads,marker,level=None):
-    pattern = f"(?:{marker})(.*?)(?:{marker})"
-    
-    for key,value in positions.items():
-        for elem in payloads:
-            with open(elem,"r",encoding="latin1") as file:
-                for line in file:
-                    new_request = dict(request)
-                    
-
-                    request_modifier(new_request,value,key,line,pattern,level)
-                    
-                    # Clear the other positions markers
-                    # Make Asyncounus requests
-                        
-            file.close()
-           
-           
-def parallel(request,positions,payloads,marker,level=None):
-    pattern = f"(?:{marker})(.*?)(?:{marker})"
-    
-    for elem in payloads:
-        with open(elem,"r",encoding="latin1") as file:
-            for line in file:
-                new_request = dict(request)
-                for key,value in positions.items():
-                    
-                    request_modifier(new_request,value,key,line,pattern,level)     
-                                       
-            #REQUEST                    
-                            
-        file.close()
-           
- 
-           
-def request_modifier(request,value,key,line,pattern,level=None):
-    
-    if(isinstance(value,OrderedDict)):
-        #sniper(request,value,payloads,marker,key)
-        # Without recursion , it may be opening multiple file
-        continue
-
-    if level is None:
-        og_string = request[key]
-        request[key] = re.sub(pattern,line,og_string,1)
-
-    else:        
-        og_string = request[level][key]
-        request[level][key] = re.sub(pattern,line,og_string,1) 
-        
-    return request
