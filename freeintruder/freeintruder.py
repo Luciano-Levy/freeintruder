@@ -38,38 +38,38 @@ def main():
 
     parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter,
                             description=print_banner())
+    
     parser.add_argument("request",
                         metavar="REQUEST",
                         action="store",
                         help="The request to be parameterized,") # multiple in the future
+    
     parser.add_argument("attack",
                         action="store",
                         choices=["sniper","parallel","pitchfork","cluster"],
                         default="sniper",
                         help="Select attack type")
+    
     parser.add_argument("payloads",
                         nargs="+",metavar="PAYLOADS",
                         action="extend",
-                        help="""One or more payloads sets file,
-                        notice the order that follows: method,
-                        url,
-                        data,
-                        headers,
-                        cookies,
-                        verify,
-                        auth""")
+                        help="One or more payloads sets file,notice the order that follows: method,url,data,headers,cookies,verify,auth")
+    
     parser.add_argument("--version",
                         action="version", version=version_string,
                         help="Display version information and dependencies."
                         )
+    
     parser.add_argument("--verbose", "-v", "-d", "--debug",
                         action="store_true", dest="verbose", default=False,
                         help="Display extra debugging information and metrics."
                         )
+    
     parser.add_argument("-t","--marker",
                         action="store",
                         dest="marker",default="%",
-                        help="Marker where the text inside is parameterized, default %")
+                        help="Marker where the text inside is parameterized, default %%")
+    """
     parser.add_argument("--match","-m",
                         action="extend",nargs="+",dest="match_string",
                         help="Match text in response")
@@ -77,7 +77,7 @@ def main():
     parser.add_argument("--no-content-lenght",
                         action="store_true",
                         default=False,
-                        help="Dont auto update Content-Lenght header") # Todo
+                        help="Dont auto update Content-Lenght header, TODO") # Todo
     parser.add_argument("--redirections",
                         action="store_true",
                         default=False,
@@ -91,7 +91,7 @@ def main():
     parser.add_argument("--char",
                         action="store",default="",
                         help="Delete trailing character") # BURP add $ 
-    
+    """
     args = parser.parse_args()
     
     args.request = (args.request).replace(args.char,"")
