@@ -70,7 +70,7 @@ def main():
                         action="store",
                         dest="marker",default="%",
                         help="Marker where the text inside is parameterized, default %%")
-    parser.add_argument("--match","-m",
+    parser.add_argument("--match","-m",required=True,
                         action="extend",nargs="+",dest="match_string",
                         help="Match text in response")
    
