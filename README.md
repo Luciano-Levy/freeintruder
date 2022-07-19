@@ -14,7 +14,7 @@ $ python3 -m pip install -r requirements.txt
 
 
 <p align="center">
-<img src="./images/demostration.gif"/>
+<img src="./images/demo.gif"/>
 </p>
 
 ## Usage
