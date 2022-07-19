@@ -7,15 +7,18 @@ import string
 def attack_starter(request,attack,payloads,marker):
     pattern = f"(?:{marker})(.*?)(?:{marker})"
     positions = positions_search(request,pattern)
+    if(len(positions) == 0):
+        raise Exception("You forgot the markers")
     tasks_request = []
     if(attack == "sniper"):
         
             tasks_request = sniper(request,payloads,positions,marker,pattern)
             
-    if(attack == "parallel"):
+    elif(attack == "parallel"):
         
             tasks_request = parallel(request,positions,payloads)
-
+    else:
+        raise Exception("Attack not yet implemented")
     return tasks_request
 
 def sniper(request,payloads,positions,marker,pattern):
