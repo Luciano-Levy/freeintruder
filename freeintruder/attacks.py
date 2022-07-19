@@ -7,7 +7,7 @@ import string
 def attack_starter(request,attack,payloads,marker):
     pattern = f"(?:{marker})(.*?)(?:{marker})"
     positions = positions_search(request,pattern)
-    
+    tasks_request = []
     if(attack == "sniper"):
         
             tasks_request = sniper(request,payloads,positions,marker,pattern)
@@ -16,7 +16,7 @@ def attack_starter(request,attack,payloads,marker):
         
             tasks_request = parallel(request,positions,payloads)
 
-
+    return tasks_request
 
 def sniper(request,payloads,positions,marker,pattern):
     
@@ -31,7 +31,7 @@ def sniper(request,payloads,positions,marker,pattern):
                     new_request = marker_cleaner(new_request,marker)
                     
                     
-                    total_requests.append(new_request)
+                    total_requests.append({"req":new_request,"payload": line,"position":key})
            
     return total_requests         
            
@@ -51,25 +51,7 @@ def parallel(request,payloads,positions,pattern):
                 total_requests.append(new_request)                    
 
     return total_requests
-
-# len(payloads) == len(positions)
-# all individual patloads must have same len                            
-# pass open files
-"""
-def pitchfork(files):
-    
-    for j in range(len(files[0])):
-        for i in range(len(positions)):
-            new_request = dict(request)
-            #files[i] line j in position replace
-        #REQUEST        
-        
-def cluster(files):
-    for j in range(len(files[0])):
-        for i in range(len(positions)):
-            for k in files[i]:
-"""            
-
+         
     
 def request_modifier(request,payload,key,pattern,level=None):
     # URL-ENCONDED

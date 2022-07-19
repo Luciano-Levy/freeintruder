@@ -1,9 +1,13 @@
 #! usr/bin/env python3
 
 from argparse import ArgumentParser,RawDescriptionHelpFormatter
+from nis import match
 import requests
 import platform
 import uncurl
+import attacks
+import async_req
+import match
 
 module_name = "FreeIntruder: quickly and free http request parametrizer"
 __version__ = "0.0.1"
@@ -38,10 +42,22 @@ def main():
                         metavar="REQUEST",
                         action="store",
                         help="The request to be parameterized,") # multiple in the future
-    parser.add_argument("--payloads","-p",
+    parser.add_argument("attack",
+                        action="store",
+                        choices=["sniper","parallel","pitchfork","cluster"],
+                        default="sniper",
+                        help="Select attack type")
+    parser.add_argument("payloads",
                         nargs="+",metavar="PAYLOADS",
                         action="extend",
-                        help="One or more payloads sets")
+                        help="""One or more payloads sets file,
+                        notice the order that follows: method,
+                        url,
+                        data,
+                        headers,
+                        cookies,
+                        verify,
+                        auth""")
     parser.add_argument("--version",
                         action="version", version=version_string,
                         help="Display version information and dependencies."
@@ -52,16 +68,12 @@ def main():
                         )
     parser.add_argument("-t","--marker",
                         action="store",
-                        dest="marker",default="$",
-                        help="Marker where the text inside is parameterized, default $")
+                        dest="marker",default="%",
+                        help="Marker where the text inside is parameterized, default %")
     parser.add_argument("--match","-m",
-                        action="store",dest="match_string",
+                        action="extend",nargs="+",dest="match_string",
                         help="Match text in response")
-    parser.add_argument("attack",
-                        action="store",
-                        choices=["sniper","parallel","pitchfork","cluster"],
-                        default="sniper",
-                        help="Select attack type")
+   
     parser.add_argument("--no-content-lenght",
                         action="store_true",
                         default=False,
@@ -75,11 +87,24 @@ def main():
                         help="How many concurrent requests",default=10)
     parser.add_argument("--delay",
                         action="store",
-                        help="Delay between requests in ms",default=5)
+                        help="Delay between requests in ms",default=0)
+    parser.add_argument("--char",
+                        action="store",default="",
+                        help="Delete trailing character") # BURP add $ 
+    
     args = parser.parse_args()
     
-    print(args)
+    args.request = (args.request).replace(args.char,"")
+    
+    r = uncurl.parse_context(args.request)
+    
+    total_reqs = attacks.attack_starter(r._asdict(),args.attack,args.payloads,args.marker)
 
+    responses = async_req.main(total_reqs,args.concurrents,args.delay,args.redirections)
+    
+    match.matcher(responses,args.match_string)
+      
+    
 if __name__ == "__main__":
     main()
 
