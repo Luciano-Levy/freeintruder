@@ -1,4 +1,5 @@
-uncurl
-aiohttp
-lxml
-prettytable
+uncurl>=0.0.11
+aiohttp>=3.8.1
+lxml>=4.9.1
+prettytable>=3.3.0
+colorama>=0.4.5
