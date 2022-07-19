@@ -33,7 +33,6 @@ Author: lmtlevie
 def main():
     # agregate all dependencies
     version_string = f"%(prog)s {__version__}\n" + \
-                     f"{requests.__description__}:  {requests.__version__}\n" + \
                      f"Python:  {platform.python_version()}"
 
     parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter,
